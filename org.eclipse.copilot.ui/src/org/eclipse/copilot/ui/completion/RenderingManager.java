@@ -150,6 +150,8 @@ public class RenderingManager implements PaintListener {
           if (style != null && style.metrics != null) {
             // Clone the style to preserve other attributes that may have been set by other plugins
             StyleRange newStyle = (StyleRange) style.clone();
+            newStyle.start = widgetOffset;
+            newStyle.length = 1;
             newStyle.metrics = null;
             styledText.setStyleRange(newStyle);
           }
