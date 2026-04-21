@@ -148,8 +148,10 @@ public class RenderingManager implements PaintListener {
           StyleRange style = styledText.getStyleRangeAtOffset(widgetOffset);
           // update metrics to null to remove extra spaces of the inline ghost text.
           if (style != null && style.metrics != null) {
-            style.metrics = null;
-            styledText.setStyleRange(style);
+            // Clone the style to preserve other attributes that may have been set by other plugins
+            StyleRange newStyle = (StyleRange) style.clone();
+            newStyle.metrics = null;
+            styledText.setStyleRange(newStyle);
           }
         } else {
           // Clear vertical indentation for the position where the completion is triggered.

@@ -94,13 +94,18 @@ public class InlineGhostText extends GhostText {
   private static StyleRange updateStyle(int widgetOffset, String text, StyleRange style, FontMetrics fontMetrics,
       int redrawnCharacterWidth, int textWidth) {
     int fullWidth = textWidth + redrawnCharacterWidth;
+    StyleRange newStyle;
     if (style == null) {
-      style = new StyleRange();
-      style.start = widgetOffset;
-      style.length = 1;
+      newStyle = new StyleRange();
+      newStyle.start = widgetOffset;
+      newStyle.length = 1;
+    } else {
+      // Clone the existing style to preserve all attributes (colors, borders, etc.)
+      // that may have been set by other plugins like SonarQube
+      newStyle = (StyleRange) style.clone();
     }
 
-    GlyphMetrics metrics = style.metrics;
+    GlyphMetrics metrics = newStyle.metrics;
     if (text != null) {
       if (metrics == null) {
         metrics = new GlyphMetrics(fontMetrics.getAscent(), fontMetrics.getDescent(), fullWidth);
@@ -115,8 +120,8 @@ public class InlineGhostText extends GhostText {
       metrics = null;
     }
 
-    style.metrics = metrics;
-    return style;
+    newStyle.metrics = metrics;
+    return newStyle;
   }
 
 }
