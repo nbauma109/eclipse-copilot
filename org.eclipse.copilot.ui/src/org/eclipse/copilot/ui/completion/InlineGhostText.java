@@ -103,8 +103,24 @@ public class InlineGhostText extends GhostText {
       // Clone the existing style to preserve all attributes (colors, borders, etc.)
       // that may have been set by other plugins like SonarQube
       newStyle = (StyleRange) style.clone();
-      // Constrain the cloned style to only affect the single character at widgetOffset
-      // to avoid interfering with multi-character ranges from other plugins
+
+      // CRITICAL: Constrain the cloned style to only the single character at widgetOffset.
+      //
+      // Why length=1?
+      // - getStyleRangeAtOffset() can return a StyleRange spanning multiple characters
+      //   (e.g., SonarQube may mark an entire method name with borders/colors)
+      // - We only need to attach GlyphMetrics to ONE character (the host character that
+      //   the inline ghost text visually replaces in the editor)
+      // - Setting length=1 ensures we don't accidentally apply GlyphMetrics to the entire
+      //   multi-character range, which would corrupt other plugins' decorations
+      //
+      // Why not 0 or -1?
+      // - length=0 would be invalid (StyleRange requires length >= 1)
+      // - length=-1 has no defined behavior in SWT StyleRange API
+      // - length=1 is the minimum valid range that targets exactly the character we need
+      //
+      // This prevents the SonarQube red rectangle bug where our GlyphMetrics were being
+      // applied to entire warning ranges instead of just the insertion point.
       newStyle.start = widgetOffset;
       newStyle.length = 1;
     }

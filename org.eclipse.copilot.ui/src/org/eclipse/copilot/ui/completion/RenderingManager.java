@@ -150,6 +150,13 @@ public class RenderingManager implements PaintListener {
           if (style != null && style.metrics != null) {
             // Clone the style to preserve other attributes that may have been set by other plugins
             StyleRange newStyle = (StyleRange) style.clone();
+
+            // CRITICAL: Constrain to single character when clearing metrics.
+            // This mirrors the constraint in InlineGhostText.updateStyle() - see that method
+            // for detailed explanation of why length=1 is necessary and why 0/-1 are invalid.
+            //
+            // Without this, clearing the GlyphMetrics could affect multi-character ranges
+            // from other plugins (e.g., SonarQube warning markers), causing visual artifacts.
             newStyle.start = widgetOffset;
             newStyle.length = 1;
             newStyle.metrics = null;
