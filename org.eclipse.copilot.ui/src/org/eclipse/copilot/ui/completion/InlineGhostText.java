@@ -103,6 +103,10 @@ public class InlineGhostText extends GhostText {
       // Clone the existing style to preserve all attributes (colors, borders, etc.)
       // that may have been set by other plugins like SonarQube
       newStyle = (StyleRange) style.clone();
+      // Constrain the cloned style to only affect the single character at widgetOffset
+      // to avoid interfering with multi-character ranges from other plugins
+      newStyle.start = widgetOffset;
+      newStyle.length = 1;
     }
 
     GlyphMetrics metrics = newStyle.metrics;
