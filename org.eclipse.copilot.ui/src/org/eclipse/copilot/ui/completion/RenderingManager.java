@@ -145,11 +145,22 @@ public class RenderingManager implements PaintListener {
       for (GhostText ghostText : this.ghostTexts) {
         if (Objects.equals(ghostText.type, GhostTextType.IN_LINE)) {
           int widgetOffset = UiUtils.modelOffset2WidgetOffset(textViewer, ghostText.modelOffset);
+          // UiUtils.modelOffset2WidgetOffset can return -1 when there is no corresponding widget
+          // offset. StyledText APIs throw for offsets outside [0, charCount-1], so guard here.
+          if (widgetOffset < 0 || widgetOffset >= styledText.getCharCount()) {
+            continue;
+          }
           StyleRange style = styledText.getStyleRangeAtOffset(widgetOffset);
           // update metrics to null to remove extra spaces of the inline ghost text.
           if (style != null && style.metrics != null) {
-            style.metrics = null;
-            styledText.setStyleRange(style);
+            // Clone the style to preserve other attributes that may have been set by other plugins
+            StyleRange newStyle = (StyleRange) style.clone();
+
+            // SWT requires a positive length; use 1 to limit the reset to the anchor character.
+            newStyle.start = widgetOffset;
+            newStyle.length = 1;
+            newStyle.metrics = null;
+            styledText.setStyleRange(newStyle);
           }
         } else {
           // Clear vertical indentation for the position where the completion is triggered.
